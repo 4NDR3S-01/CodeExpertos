@@ -9,7 +9,8 @@
     "start": "next start",
     "lint": "next lint",
     "type-check": "tsc --noEmit",
-    "analyze": "ANALYZE=true next build"
+    "analyze": "ANALYZE=true next build",
+    "prebuild": "npm run lint && npm run type-check"
   },
   "dependencies": {
     "framer-motion": "^12.22.0",
@@ -28,6 +29,7 @@
     "eslint-config-next": "15.3.4",
     "tailwindcss": "^4",
     "typescript": "^5",
-    "prettier": "^3"
+    "prettier": "^3",
+    "@next/bundle-analyzer": "^15.0.0"
   }
 }

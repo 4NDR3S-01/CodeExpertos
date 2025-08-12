@@ -34,10 +34,18 @@ export default function Home() {
   const { theme, setTheme } = useTheme();
 
   // Simular useTranslation (en un proyecto real usarías next-i18next)
-  const t = (key: string) => {
+  const t = (key: string): string => {
     const dict = currentLang === 'es' ? esCommon : enCommon;
     const parts = key.split('.');
-    return parts.reduce<any>((acc, p) => (acc && acc[p] !== undefined ? acc[p] : key), dict);
+    let current: unknown = dict as Record<string, unknown>;
+    for (const p of parts) {
+      if (typeof current === 'object' && current !== null && p in (current as Record<string, unknown>)) {
+        current = (current as Record<string, unknown>)[p];
+      } else {
+        return key; // fallback
+      }
+    }
+    return typeof current === 'string' ? current : key;
   };
 
   // Detectar idioma del navegador
