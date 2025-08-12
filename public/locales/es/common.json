@@ -1,0 +1,56 @@
+{
+  "nav": {
+    "home": "Inicio",
+    "services": "Servicios",
+    "portfolio": "Portafolio",
+    "about": "Sobre Nosotros",
+    "contact": "Contacto"
+  },
+  "hero": {
+    "title": "Desarrollo de Software y Soluciones Digitales",
+    "subtitle": "Somos expertos en desarrollo de apps web, móviles y mantenimiento de software. Llevamos tu negocio al siguiente nivel."
+  },
+  "services": {
+    "title": "Servicios",
+    "web": {
+      "title": "Desarrollo Web",
+      "description": "Sitios y aplicaciones web modernas, rápidas y seguras."
+    },
+    "mobile": {
+      "title": "Apps Móviles",
+      "description": "Aplicaciones móviles nativas y multiplataforma."
+    },
+    "custom": {
+      "title": "Software a Medida",
+      "description": "Soluciones personalizadas para tu empresa."
+    },
+    "maintenance": {
+      "title": "Mantenimiento",
+      "description": "Soporte y mantenimiento de sistemas existentes."
+    }
+  },
+  "portfolio": {
+    "title": "Portafolio",
+    "project1": {
+      "title": "Proyecto Ejemplo 1",
+      "description": "Descripción breve del proyecto realizado."
+    },
+    "project2": {
+      "title": "Proyecto Ejemplo 2",
+      "description": "Descripción breve del proyecto realizado."
+    }
+  },
+  "about": {
+    "title": "Sobre Nosotros",
+    "description": "Somos un equipo apasionado por la tecnología y la innovación, comprometidos con el éxito de nuestros clientes."
+  },
+  "contact": {
+    "title": "Contacto",
+    "name": "Nombre",
+    "email": "Correo electrónico",
+    "message": "Mensaje",
+    "sendEmail": "Enviar por correo",
+    "whatsapp": "WhatsApp",
+    "success": "Mensaje enviado (ejemplo)"
+  }
+} 

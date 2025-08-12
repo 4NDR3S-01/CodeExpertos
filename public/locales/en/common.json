@@ -1,0 +1,56 @@
+{
+  "nav": {
+    "home": "Home",
+    "services": "Services",
+    "portfolio": "Portfolio",
+    "about": "About Us",
+    "contact": "Contact"
+  },
+  "hero": {
+    "title": "Software Development and Digital Solutions",
+    "subtitle": "We are experts in web and mobile app development and software maintenance. We take your business to the next level."
+  },
+  "services": {
+    "title": "Services",
+    "web": {
+      "title": "Web Development",
+      "description": "Modern, fast and secure websites and web applications."
+    },
+    "mobile": {
+      "title": "Mobile Apps",
+      "description": "Native and cross-platform mobile applications."
+    },
+    "custom": {
+      "title": "Custom Software",
+      "description": "Personalized solutions for your company."
+    },
+    "maintenance": {
+      "title": "Maintenance",
+      "description": "Support and maintenance of existing systems."
+    }
+  },
+  "portfolio": {
+    "title": "Portfolio",
+    "project1": {
+      "title": "Example Project 1",
+      "description": "Brief description of the completed project."
+    },
+    "project2": {
+      "title": "Example Project 2",
+      "description": "Brief description of the completed project."
+    }
+  },
+  "about": {
+    "title": "About Us",
+    "description": "We are a team passionate about technology and innovation, committed to our clients' success."
+  },
+  "contact": {
+    "title": "Contact",
+    "name": "Name",
+    "email": "Email",
+    "message": "Message",
+    "sendEmail": "Send by email",
+    "whatsapp": "WhatsApp",
+    "success": "Message sent (example)"
+  }
+} 
