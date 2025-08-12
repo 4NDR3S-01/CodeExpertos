@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono, Inter, Montserrat } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "./theme-provider";
@@ -17,19 +17,20 @@ const geistMono = Geist_Mono({
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 const montserrat = Montserrat({ subsets: ["latin"], variable: "--font-montserrat" });
 
+export const viewport: Viewport = { width: 'device-width', initialScale: 1 };
+
 export const metadata: Metadata = {
   title: "CodeExpertos - Desarrollo de Software y Soluciones Digitales",
   description: "Expertos en desarrollo de apps web, móviles y mantenimiento de software. Llevamos tu negocio al siguiente nivel.",
   keywords: ["desarrollo web","apps móviles","software","mantenimiento","CodeExpertos"],
   authors: [{ name: "CodeExpertos" }],
-  viewport: "width=device-width, initial-scale=1",
   openGraph: {
     title: "CodeExpertos - Desarrollo de Software y Soluciones Digitales",
     description: "Expertos en desarrollo de apps web, móviles y mantenimiento de software.",
     type: "website",
     locale: "es_ES",
     siteName: "CodeExpertos",
-    url: "https://codeexpertos.example.com"
+    url: "https://code-expertos.studio"
   },
   twitter: {
     card: "summary_large_image",
@@ -37,7 +38,7 @@ export const metadata: Metadata = {
     description: "Expertos en desarrollo de apps web, móviles y mantenimiento de software.",
     creator: "@codeexpertos"
   },
-  metadataBase: new URL("https://codeexpertos.example.com")
+  metadataBase: new URL("https://code-expertos.studio")
 };
 
 export default function RootLayout({

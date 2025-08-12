@@ -29,6 +29,7 @@ export default function Home() {
   const [currentLang, setCurrentLang] = useState("es");
   const [langDropdownOpen, setLangDropdownOpen] = useState(false);
   const [themeDropdownOpen, setThemeDropdownOpen] = useState(false);
+  const [activeSection, setActiveSection] = useState<string>("inicio");
   const langDropdownRef = useRef<HTMLDivElement>(null);
   const themeDropdownRef = useRef<HTMLDivElement>(null);
   const { theme, setTheme } = useTheme();
@@ -69,6 +70,36 @@ export default function Home() {
 
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  // Extracted observer callback to avoid deep nesting
+  function handleIntersection(
+    id: string,
+    setActiveSection: (id: string) => void
+  ): IntersectionObserverCallback {
+    return (entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          setActiveSection(id);
+        }
+      });
+    };
+  }
+
+  useEffect(() => {
+    const ids = sections.map(s => s.id);
+    const observers: IntersectionObserver[] = [];
+    ids.forEach(id => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      const observer = new IntersectionObserver(
+        handleIntersection(id, setActiveSection),
+        { threshold: 0.45 }
+      );
+      observer.observe(el);
+      observers.push(observer);
+    });
+    return () => observers.forEach(o => o.disconnect());
   }, []);
 
   const scrollToSection = (id: string) => {
@@ -247,7 +278,7 @@ export default function Home() {
             {sections.map((s) => (
               <li key={s.id}>
                 <button
-                  className="hover:text-primary transition-colors font-medium text-sm xl:text-base focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded"
+                  className={`nav-link hover:text-primary transition-colors font-medium text-sm xl:text-base focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded ${activeSection===s.id ? 'nav-link-active text-primary' : ''}`}
                   onClick={() => scrollToSection(s.id)}
                   aria-label={"Ir a sección " + t("nav." + s.key)}
                 >
@@ -264,7 +295,7 @@ export default function Home() {
               {sections.map((s) => (
                 <li key={s.id}>
                   <button
-                    className="w-full text-left py-3 px-3 rounded-lg hover:bg-primary/10 font-medium text-base transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                    className={`w-full text-left py-3 px-3 rounded-lg font-medium text-base transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary nav-link ${activeSection===s.id ? 'bg-primary/10 text-primary' : 'hover:bg-primary/10'}`}
                     onClick={() => scrollToSection(s.id)}
                     aria-label={"Ir a sección " + t("nav." + s.key)}
                   >
@@ -278,18 +309,19 @@ export default function Home() {
       </header>
 
       {/* Secciones */}
-      <main className="pt-16 sm:pt-20 lg:pt-24 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col gap-20 sm:gap-24 lg:gap-32">
+      <main className="pt-16 sm:pt-20 lg:pt-24 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col gap-32">
         {/* INICIO */}
         <motion.section
           id="inicio"
+          className="section-wrapper"
           initial={{ opacity: 0, y: 40 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, amount: 0.6 }}
           transition={{ duration: 0.7 }}
-          className="min-h-[50vh] sm:min-h-[60vh] lg:min-h-[70vh] flex flex-col justify-center items-center text-center gap-4 sm:gap-6"
         >
+          <div className="parallax-decor"><span /><span /><span /></div>
           <div className="glass-effect rounded-2xl p-8 sm:p-12 backdrop-blur-md max-w-4xl">
-            <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold leading-tight bg-gradient-to-r from-primary via-accent to-cyan-400 bg-clip-text text-transparent mb-6">
+            <h1 className="animated-gradient text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold leading-tight mb-6">
               CodeExpertos
             </h1>
             <p className="text-base sm:text-lg lg:text-xl max-w-sm sm:max-w-xl lg:max-w-2xl text-muted leading-relaxed mb-8">
@@ -299,7 +331,7 @@ export default function Home() {
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                className="px-8 py-3 bg-primary text-white rounded-lg font-semibold hover:bg-primary/90 transition-colors"
+                className="btn btn-primary btn-glow"
                 onClick={() => document.getElementById('servicios')?.scrollIntoView({ behavior: 'smooth' })}
               >
                 Nuestros Servicios
@@ -307,7 +339,7 @@ export default function Home() {
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                className="px-8 py-3 border border-border text-foreground rounded-lg font-semibold hover:bg-secondary transition-colors"
+                className="btn btn-outline"
                 onClick={() => document.getElementById('contacto')?.scrollIntoView({ behavior: 'smooth' })}
               >
                 Contáctanos
@@ -315,101 +347,96 @@ export default function Home() {
             </div>
           </div>
         </motion.section>
-
+        <div className="section-separator" />
         {/* SERVICIOS */}
         <motion.section
           id="servicios"
+          className="section-wrapper"
           initial={{ opacity: 0, y: 40 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, amount: 0.6 }}
           transition={{ duration: 0.7, delay: 0.1 }}
-          className="flex flex-col gap-6 sm:gap-8 items-center"
         >
-          <div className="text-center mb-8">
-            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-semibold mb-2 sm:mb-4">{t("services.title")}</h2>
+          <div className="text-center mb-4 sm:mb-6">
+            <span className="badge-soft mb-3 inline-block tracking-wide">{currentLang==='es'?'Qué hacemos':'What we do'}</span>
+            <h2 className="section-title text-2xl sm:text-3xl lg:text-4xl font-semibold mb-2 sm:mb-4">{t("services.title")}</h2>
             <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
               Ofrecemos soluciones completas de desarrollo digital para empresas de todos los tamaños
             </p>
+            <div className="divider-dots"><span></span><span></span><span></span></div>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4 sm:gap-6 w-full max-w-4xl">
-            <motion.div 
-              whileHover={{ y: -5 }}
-              className="glass-effect rounded-lg p-4 sm:p-6 backdrop-blur-md hover:shadow-lg transition-all duration-300"
-            >
+            <motion.div whileHover={{ y: -6 }} className="card card-accent-border">
+              <div className="badge mb-2">Web</div>
               <h3 className="font-bold text-lg sm:text-xl mb-2">{t("services.web.title")}</h3>
               <p className="text-sm sm:text-base text-muted leading-relaxed">{t("services.web.description")}</p>
             </motion.div>
-            <motion.div 
-              whileHover={{ y: -5 }}
-              className="glass-effect rounded-lg p-4 sm:p-6 backdrop-blur-md hover:shadow-lg transition-all duration-300"
-            >
+            <motion.div whileHover={{ y: -6 }} className="card card-accent-border">
+              <div className="badge mb-2">Mobile</div>
               <h3 className="font-bold text-lg sm:text-xl mb-2">{t("services.mobile.title")}</h3>
               <p className="text-sm sm:text-base text-muted leading-relaxed">{t("services.mobile.description")}</p>
             </motion.div>
-            <motion.div 
-              whileHover={{ y: -5 }}
-              className="glass-effect rounded-lg p-4 sm:p-6 backdrop-blur-md hover:shadow-lg transition-all duration-300"
-            >
+            <motion.div whileHover={{ y: -6 }} className="card card-accent-border">
+              <div className="badge mb-2">Custom</div>
               <h3 className="font-bold text-lg sm:text-xl mb-2">{t("services.custom.title")}</h3>
               <p className="text-sm sm:text-base text-muted leading-relaxed">{t("services.custom.description")}</p>
             </motion.div>
-            <motion.div 
-              whileHover={{ y: -5 }}
-              className="glass-effect rounded-lg p-4 sm:p-6 backdrop-blur-md hover:shadow-lg transition-all duration-300"
-            >
+            <motion.div whileHover={{ y: -6 }} className="card card-accent-border">
+              <div className="badge mb-2">Ops</div>
               <h3 className="font-bold text-lg sm:text-xl mb-2">{t("services.maintenance.title")}</h3>
               <p className="text-sm sm:text-base text-muted leading-relaxed">{t("services.maintenance.description")}</p>
             </motion.div>
           </div>
         </motion.section>
-
+        <div className="section-separator" />
         {/* PORTAFOLIO */}
         <motion.section
           id="portafolio"
+          className="section-wrapper"
           initial={{ opacity: 0, y: 40 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, amount: 0.6 }}
           transition={{ duration: 0.7, delay: 0.2 }}
-          className="flex flex-col gap-6 sm:gap-8 items-center"
         >
-          <div className="text-center mb-8">
-            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-semibold mb-2 sm:mb-4">{t("portfolio.title")}</h2>
+          <div className="text-center mb-6">
+            <span className="badge-soft mb-3 inline-block tracking-wide">{currentLang==='es'?'Casos':'Cases'}</span>
+            <h2 className="section-title text-2xl sm:text-3xl lg:text-4xl font-semibold mb-2 sm:mb-4">{t("portfolio.title")}</h2>
             <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
               Algunos de nuestros proyectos más destacados
             </p>
+            <div className="divider-dots"><span></span><span></span><span></span></div>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 w-full max-w-4xl">
-            <motion.div 
-              whileHover={{ y: -5 }}
-              className="glass-effect rounded-lg p-4 sm:p-6 backdrop-blur-md hover:shadow-lg transition-all duration-300"
-            >
-              <h3 className="font-bold text-base sm:text-lg lg:text-xl mb-2">{t("portfolio.project1.title")}</h3>
-              <p className="text-sm sm:text-base text-muted leading-relaxed">{t("portfolio.project1.description")}</p>
-            </motion.div>
-            <motion.div 
-              whileHover={{ y: -5 }}
-              className="glass-effect rounded-lg p-4 sm:p-6 backdrop-blur-md hover:shadow-lg transition-all duration-300"
-            >
-              <h3 className="font-bold text-base sm:text-lg lg:text-xl mb-2">{t("portfolio.project2.title")}</h3>
-              <p className="text-sm sm:text-base text-muted leading-relaxed">{t("portfolio.project2.description")}</p>
-            </motion.div>
+            {[1,2].map(i => (
+              <motion.div key={i} whileHover={{ y: -6 }} className="portfolio-item card card-accent-border p-0 overflow-hidden">
+                <div className="relative h-44 sm:h-52 w-full bg-gradient-to-br from-primary/40 to-accent/40 flex items-center justify-center">
+                  <span className="text-5xl font-bold text-white/30">P{i}</span>
+                </div>
+                <div className="overlay">
+                  <h3 className="font-bold text-base sm:text-lg lg:text-xl mb-1">{t(`portfolio.project${i}.title`)}</h3>
+                  <p className="text-xs sm:text-sm text-white/80 leading-relaxed">{t(`portfolio.project${i}.description`)}</p>
+                </div>
+              </motion.div>
+            ))}
           </div>
         </motion.section>
-
+        <div className="section-separator" />
         {/* TESTIMONIOS */}
         <motion.section
           id="testimonios"
+          className="section-wrapper"
           initial={{ opacity: 0, y: 40 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, amount: 0.6 }}
           transition={{ duration: 0.7, delay: 0.25 }}
-          className="flex flex-col gap-6 sm:gap-8 items-center"
         >
-          <div className="text-center mb-8">
-            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-semibold mb-2 sm:mb-4">{currentLang==='es'? 'Testimonios':'Testimonials'}</h2>
+          <div className="text-center mb-6">
+            <span className="badge-soft mb-3 inline-block tracking-wide">{currentLang==='es'?'Opiniones':'Feedback'}</span>
+            <h2 className="section-title text-2xl sm:text-3xl lg:text-4xl font-semibold mb-2 sm:mb-4">{currentLang==='es'? 'Testimonios':'Testimonials'}</h2>
             <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
               {currentLang==='es'? 'La confianza de nuestros clientes es nuestro mejor aval':'Our clients\' trust is our best endorsement'}
             </p>
+            <div className="divider-dots"><span></span><span></span><span></span></div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 w-full max-w-5xl">
             {[1,2,3].map(i => (
@@ -432,21 +459,23 @@ export default function Home() {
             ))}
           </div>
         </motion.section>
-
+        <div className="section-separator" />
         {/* SOBRE NOSOTROS */}
         <motion.section
           id="nosotros"
+          className="section-wrapper"
           initial={{ opacity: 0, y: 40 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, amount: 0.6 }}
           transition={{ duration: 0.7, delay: 0.3 }}
-          className="flex flex-col gap-6 sm:gap-8 items-center"
         >
-          <div className="text-center mb-8">
-            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-semibold mb-2 sm:mb-4">{t("about.title")}</h2>
+          <div className="text-center mb-6">
+            <span className="badge-soft mb-3 inline-block tracking-wide">{currentLang==='es'?'Equipo':'Team'}</span>
+            <h2 className="section-title text-2xl sm:text-3xl lg:text-4xl font-semibold mb-2 sm:mb-4">{t("about.title")}</h2>
             <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
               Somos un equipo apasionado por la tecnología y la innovación
             </p>
+            <div className="divider-dots"><span></span><span></span><span></span></div>
           </div>
           <div className="glass-effect rounded-2xl p-8 sm:p-12 backdrop-blur-md max-w-4xl">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
@@ -473,21 +502,23 @@ export default function Home() {
             </div>
           </div>
         </motion.section>
-
+        <div className="section-separator" />
         {/* CONTACTO */}
         <motion.section
           id="contacto"
+          className="section-wrapper"
           initial={{ opacity: 0, y: 40 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, amount: 0.6 }}
           transition={{ duration: 0.7, delay: 0.4 }}
-          className="flex flex-col gap-6 sm:gap-8 items-center"
         >
-          <div className="text-center mb-8">
-            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-semibold mb-2 sm:mb-4">{t("contact.title")}</h2>
+          <div className="text-center mb-6">
+            <span className="badge-soft mb-3 inline-block tracking-wide">{currentLang==='es'?'Contacto':'Contact'}</span>
+            <h2 className="section-title text-2xl sm:text-3xl lg:text-4xl font-semibold mb-2 sm:mb-4">{t("contact.title")}</h2>
             <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
               ¿Listo para comenzar tu proyecto? ¡Hablemos!
             </p>
+            <div className="divider-dots"><span></span><span></span><span></span></div>
           </div>
           <div className="glass-effect rounded-2xl p-8 sm:p-12 backdrop-blur-md max-w-2xl w-full">
             <form
@@ -591,6 +622,14 @@ export default function Home() {
           </motion.p>
         </div>
       </footer>
+      {/* Floating Action Button WhatsApp */}
+      <button
+        className="fab"
+        aria-label="Abrir WhatsApp"
+        onClick={() => window.open('https://wa.me/1234567890?text=Hola%20CodeExpertos,%20quiero%20más%20información.', '_blank')}
+      >
+        💬
+      </button>
     </div>
   );
 }
