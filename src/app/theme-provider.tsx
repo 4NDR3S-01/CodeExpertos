@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useState, useMemo } from "react";
 
 type Theme = "dark" | "light" | "system";
 
@@ -30,7 +30,7 @@ export function ThemeProvider({
   defaultTheme = "system",
   enableSystem = true,
   disableTransitionOnChange = false,
-}: ThemeProviderProps) {
+}: Readonly<ThemeProviderProps>) {
   const [theme, setTheme] = useState<Theme>(defaultTheme);
 
   useEffect(() => {
@@ -62,13 +62,16 @@ export function ThemeProvider({
     }
   }, [theme, attribute, enableSystem, disableTransitionOnChange]);
 
-  const value = {
-    theme,
-    setTheme: (newTheme: Theme) => {
-      setTheme(newTheme);
-      localStorage.setItem("theme", newTheme);
-    },
-  };
+  const value = useMemo(
+    () => ({
+      theme,
+      setTheme: (newTheme: Theme) => {
+        setTheme(newTheme);
+        localStorage.setItem("theme", newTheme);
+      },
+    }),
+    [theme]
+  );
 
   return (
     <ThemeProviderContext.Provider value={value}>

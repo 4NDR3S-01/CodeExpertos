@@ -1,0 +1,12 @@
+{
+  "name": "CodeExpertos",
+  "short_name": "CodeExpertos",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#2563eb",
+  "description": "Desarrollo de Software y Soluciones Digitales",
+  "icons": [
+    { "src": "/icono_sin-fondo.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}
