@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
-import { useTheme } from "../theme-provider";
+import { useTheme } from "../app/theme-provider";
 
 export default function TechBackground() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -67,9 +67,9 @@ export default function TechBackground() {
       // Gradiente
       const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
       if (isDark) {
-        gradient.addColorStop(0, "rgba(10, 10, 10, 0.5)");
-        gradient.addColorStop(0.5, "rgba(30, 41, 59, 0.5)");
-        gradient.addColorStop(1, "rgba(15, 23, 42, 0.5)");
+        gradient.addColorStop(0, "rgba(13, 27, 48, 0.22)"); // azul profundo tenue
+        gradient.addColorStop(0.5, "rgba(10, 22, 40, 0.18)");
+        gradient.addColorStop(1, "rgba(5, 12, 22, 0.15)");
       } else {
         gradient.addColorStop(0, "rgba(255, 255, 255, 0.5)");
         gradient.addColorStop(0.5, "rgba(248, 250, 252, 0.5)");
@@ -78,8 +78,25 @@ export default function TechBackground() {
       ctx.fillStyle = gradient;
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
+      // Capa radial adicional para profundidad en modo oscuro
+      if (isDark) {
+        const radial = ctx.createRadialGradient(
+          canvas.width * 0.5,
+          canvas.height * 0.35,
+          canvas.width * 0.05,
+          canvas.width * 0.5,
+          canvas.height * 0.5,
+          canvas.width * 0.8
+        );
+        radial.addColorStop(0, 'rgba(30, 58, 138, 0.12)');
+        radial.addColorStop(0.4, 'rgba(14, 165, 233, 0.06)');
+        radial.addColorStop(1, 'rgba(0,0,0,0)');
+        ctx.fillStyle = radial;
+        ctx.fillRect(0,0,canvas.width,canvas.height);
+      }
+
       // Grid
-      const gridColor = isDark ? "rgba(59, 130, 246, 0.15)" : "rgba(59, 130, 246, 0.08)";
+      const gridColor = isDark ? "rgba(59, 130, 246, 0.22)" : "rgba(59, 130, 246, 0.08)";
       ctx.strokeStyle = gridColor;
       ctx.lineWidth = 1;
       const gridSize = 50;
@@ -119,7 +136,7 @@ export default function TechBackground() {
         ctx.fill();
       });
       // Conexiones
-      const connectionColor = isDark ? "rgba(59, 130, 246, 0.1)" : "rgba(59, 130, 246, 0.05)";
+      const connectionColor = isDark ? "rgba(59, 130, 246, 0.12)" : "rgba(59, 130, 246, 0.05)";
       ctx.strokeStyle = connectionColor;
       ctx.lineWidth = 1;
       for (let i = 0; i < particles.length; i++) {
@@ -156,18 +173,18 @@ export default function TechBackground() {
       {/* Overlay de gradiente adicional */}
       <div className={`absolute inset-0 pointer-events-none ${
         typeof window !== 'undefined' && (theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches))
-          ? 'bg-gradient-to-br from-blue-900/20 via-transparent to-cyan-900/20'
-          : 'bg-gradient-to-br from-blue-50/30 via-transparent to-cyan-50/30'
+          ? 'bg-gradient-to-br from-blue-900/10 via-transparent to-cyan-900/10'
+          : 'bg-gradient-to-br from-blue-50/25 via-transparent to-cyan-50/25'
       }`} />
       {/* Efecto de "scan lines" */}
       <div className="absolute inset-0 opacity-5 pointer-events-none">
         {Array.from({ length: 100 }).map((_, i) => (
           <motion.div
-            key={i}
+            key={`scan-${i}`}
             className={`absolute w-full h-px ${
               typeof window !== 'undefined' && (theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches))
-                ? 'bg-cyan-400'
-                : 'bg-blue-600'
+                ? 'bg-cyan-400/60'
+                : 'bg-blue-600/70'
             }`}
             style={{ top: `${i * 1}%` }}
             animate={{
@@ -183,4 +200,4 @@ export default function TechBackground() {
       </div>
     </div>
   );
-} 
+}

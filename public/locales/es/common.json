@@ -4,7 +4,8 @@
     "services": "Servicios",
     "portfolio": "Portafolio",
     "about": "Sobre Nosotros",
-    "contact": "Contacto"
+    "contact": "Contacto",
+    "testimonials": "Testimonios"
   },
   "hero": {
     "title": "Desarrollo de Software y Soluciones Digitales",
@@ -53,4 +54,4 @@
     "whatsapp": "WhatsApp",
     "success": "Mensaje enviado (ejemplo)"
   }
-} 
+}

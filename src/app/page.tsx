@@ -5,8 +5,8 @@ import Image from "next/image";
 import dynamic from "next/dynamic";
 import { useTheme } from "./theme-provider";
 // Dynamic imports para reducir JS inicial
-const TechBackground = dynamic(() => import("./components/tech-background"), { ssr: false });
-const TechParticles = dynamic(() => import("./components/tech-particles"), { ssr: false });
+const TechBackground = dynamic(() => import("../components/tech-background"), { ssr: false });
+const TechParticles = dynamic(() => import("../components/tech-particles"), { ssr: false });
 import esCommon from "../../public/locales/es/common.json";
 import enCommon from "../../public/locales/en/common.json";
 
@@ -30,9 +30,12 @@ export default function Home() {
   const [langDropdownOpen, setLangDropdownOpen] = useState(false);
   const [themeDropdownOpen, setThemeDropdownOpen] = useState(false);
   const [activeSection, setActiveSection] = useState<string>("inicio");
+  const [shrink, setShrink] = useState(false);
   const langDropdownRef = useRef<HTMLDivElement>(null);
   const themeDropdownRef = useRef<HTMLDivElement>(null);
   const { theme, setTheme } = useTheme();
+  const headerRef = useRef<HTMLElement | null>(null);
+  const [headerHeight, setHeaderHeight] = useState(0);
 
   // Simular useTranslation (en un proyecto real usarías next-i18next)
   const t = (key: string): string => {
@@ -146,6 +149,25 @@ export default function Home() {
     }
   };
 
+  // Header shrink effect
+  useEffect(() => {
+    const onScroll = () => setShrink(window.scrollY > 12);
+    window.addEventListener('scroll', onScroll);
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
+  useEffect(() => {
+    const measure = () => {
+      if (headerRef.current) {
+        setHeaderHeight(headerRef.current.offsetHeight);
+      }
+    };
+    measure();
+    window.addEventListener('resize', measure);
+    window.addEventListener('orientationchange', measure);
+    return () => { window.removeEventListener('resize', measure); window.removeEventListener('orientationchange', measure); };
+  }, []);
+
   return (
     <div className="relative min-h-screen z-10 bg-background text-foreground font-sans">
       {/* Fondo tecnológico animado */}
@@ -153,11 +175,19 @@ export default function Home() {
       <TechParticles />
       
       {/* Menú hamburguesa */}
-      <header className="fixed top-0 left-0 w-full z-50 glass-effect border-b border-border">
-        <nav className="flex items-center justify-between max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-4">
-          <div className="flex items-center gap-2 sm:gap-3">
-            <Image src="/icono_sin-fondo.png" alt="Logo" width={32} height={32} className="sm:w-10 sm:h-10" priority />
-            <span className="font-bold text-base sm:text-lg lg:text-xl tracking-tight">CodeExpertos</span>
+      <header ref={headerRef} className={`fixed top-0 left-0 w-full z-50 glass-effect border-b border-border transition-all duration-300 ${shrink ? 'backdrop-blur-md' : ''}`}>
+        <nav className={`flex items-center justify-between max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 ${shrink ? 'py-2' : 'py-2.5 sm:py-3'}`}>
+          <div className="flex items-center gap-2">
+            <Image
+              src="/icono_sin-fondo.png"
+              alt="CodeExpertos"
+              width={40}
+              height={40}
+              sizes="(max-width:640px) 36px, 40px"
+              priority
+              className={`w-auto transition-all ${shrink ? 'h-8' : 'h-9 sm:h-10'}`}
+            />
+            <span className={`font-bold tracking-tight transition-all ${shrink ? 'text-sm sm:text-base' : 'text-base sm:text-lg lg:text-xl'}`}>CodeExpertos</span>
           </div>
           <div className="flex items-center gap-2 sm:gap-4">
             {/* Selector de idioma moderno */}
@@ -309,11 +339,15 @@ export default function Home() {
       </header>
 
       {/* Secciones */}
-      <main className="pt-16 sm:pt-20 lg:pt-24 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col gap-32">
+      <main
+        style={{ paddingTop: headerHeight ? headerHeight + 16 : undefined }}
+        className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col gap-32"
+      >
         {/* INICIO */}
         <motion.section
           id="inicio"
-          className="section-wrapper"
+          style={{ minHeight: headerHeight ? `calc(100vh - ${headerHeight}px)` : '100vh' }}
+          className="section-wrapper flex flex-col justify-center items-center text-center gap-4 sm:gap-6"
           initial={{ opacity: 0, y: 40 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, amount: 0.6 }}
@@ -430,13 +464,11 @@ export default function Home() {
           viewport={{ once: true, amount: 0.6 }}
           transition={{ duration: 0.7, delay: 0.25 }}
         >
-          <div className="text-center mb-6">
-            <span className="badge-soft mb-3 inline-block tracking-wide">{currentLang==='es'?'Opiniones':'Feedback'}</span>
-            <h2 className="section-title text-2xl sm:text-3xl lg:text-4xl font-semibold mb-2 sm:mb-4">{currentLang==='es'? 'Testimonios':'Testimonials'}</h2>
+          <div className="text-center mb-8">
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-semibold mb-2 sm:mb-4">{t('nav.testimonials')}</h2>
             <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
               {currentLang==='es'? 'La confianza de nuestros clientes es nuestro mejor aval':'Our clients\' trust is our best endorsement'}
             </p>
-            <div className="divider-dots"><span></span><span></span><span></span></div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 w-full max-w-5xl">
             {[1,2,3].map(i => (
@@ -592,7 +624,7 @@ export default function Home() {
                   type="button"
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
-                  onClick={() => window.open('https://wa.me/1234567890?text=Hola%20CodeExpertos,%20quiero%20más%20información.', '_blank')}
+                  onClick={() => window.open('https://wa.me/0963924479?text=Hola%20CodeExpertos,%20quiero%20más%20información.', '_blank')}
                   className="flex-1 px-8 py-3 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition-colors flex items-center justify-center gap-2"
                   aria-label="WhatsApp"
                 >
@@ -626,7 +658,7 @@ export default function Home() {
       <button
         className="fab"
         aria-label="Abrir WhatsApp"
-        onClick={() => window.open('https://wa.me/1234567890?text=Hola%20CodeExpertos,%20quiero%20más%20información.', '_blank')}
+        onClick={() => window.open('https://wa.me/0963924479?text=Hola%20CodeExpertos,%20quiero%20más%20información.', '_blank')}
       >
         💬
       </button>
