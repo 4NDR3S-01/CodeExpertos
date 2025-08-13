@@ -51,7 +51,11 @@
 
 @media print { header, canvas, .tech-background, .theme-toggle, .glass-effect:hover { display: none !important; } body { background: #fff !important; color: #000 !important; } }
 
-body { background: transparent !important; color: var(--foreground); font-family: 'Inter', 'Montserrat', Arial, Helvetica, sans-serif; scroll-behavior: smooth; overflow-x: hidden; font-feature-settings:"liga" on, "calt" on, "ss01" on; }
+body { margin:0; background: var(--background) !important; color: var(--foreground); font-family: 'Inter', 'Montserrat', Arial, Helvetica, sans-serif; scroll-behavior: smooth; overflow-x: hidden; font-feature-settings:"liga" on, "calt" on, "ss01" on; }
+/* El pseudo halo genera sensación de espacio arriba en la primera sección */
+.no-halo.section-wrapper::before { display:none !important; }
+/* Ajuste opcional para eliminar espacio visual residual */
+.no-halo.section-wrapper { padding-top:0 !important; }
 
 /* Scrollbar moderno */
 ::-webkit-scrollbar { width: 10px; }
@@ -133,3 +137,31 @@ body { background: transparent !important; color: var(--foreground); font-family
 
 /* Icon style for service badges */
 .badge svg { width:14px; height:14px; }
+
+/* ===== Navbar Moderno ===== */
+.navbar { position:relative; backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); border-bottom:1px solid rgba(255,255,255,.08); transition:background .45s, box-shadow .45s, border-color .45s; }
+.navbar:not(.navbar-scrolled) { background:linear-gradient(115deg,rgba(255,255,255,.65),rgba(255,255,255,.25)); }
+[data-theme="dark"] .navbar { background:linear-gradient(115deg,rgba(10,15,28,.55),rgba(10,15,28,.25)); }
+[data-theme="dark"] .navbar:not(.navbar-scrolled) { background:linear-gradient(115deg,rgba(10,15,28,.45),rgba(10,15,28,.2)); }
+.navbar-scrolled { box-shadow:0 4px 30px -8px rgba(0,0,0,.35); }
+/* Transparencia inicial opcional */
+.navbar.navbar-transparent { background:transparent !important; border-bottom-color:transparent; box-shadow:none; }
+.navbar.navbar-transparent .nav-brand-ring { opacity:0; }
+.nav-brand-wrapper { position:relative; display:flex; align-items:center; justify-content:center; height:68px; }
+.nav-brand-ring { position:absolute; inset:-2px; background:conic-gradient(from 120deg,var(--primary),var(--accent),var(--primary)); border-radius:16%; filter:blur(4px); opacity:.45; animation: spin 20s linear infinite; transition:opacity .5s; }
+.nav-brand { position:relative; isolation:isolate; border-radius:14%; padding:.35rem; background:linear-gradient(135deg,rgba(255,255,255,.06),rgba(255,255,255,.01)); box-shadow:0 3px 10px -4px rgba(0,0,0,.35), 0 0 0 1px rgba(255,255,255,.06); display:flex; align-items:center; justify-content:center; height:100%; aspect-ratio:1/1; }
+[data-theme="dark"] .nav-brand { background:linear-gradient(135deg,rgba(30,41,59,.5),rgba(15,23,42,.25)); }
+/* Logo escalable */
+.nav-brand img, .logo-img { height:clamp(70px,9vh,120px); width:auto; transition:transform .55s, filter .55s, height .55s; }
+@media (min-width:640px){ .nav-brand img, .logo-img { height:clamp(74px,9.2vh,126px); } }
+@media (min-width:1024px){ .nav-brand img, .logo-img { height:clamp(82px,9.5vh,132px); } }
+.header-shrink .nav-brand img, .header-shrink .logo-img { transform:scale(.74); height:auto; }
+/* Nav links (pill) */
+.nav-links>li>button { position:relative; padding:.55rem .95rem; border-radius:999px; overflow:hidden; }
+.nav-links>li>button::before { content:""; position:absolute; inset:0; background:linear-gradient(120deg,var(--primary),var(--accent)); opacity:0; transition:.4s; border-radius:inherit; }
+.nav-links>li>button:hover::before { opacity:.08; }
+.nav-links>li>button span { position:relative; z-index:1; }
+.nav-link-active { font-weight:600; color:var(--primary) !important; }
+.nav-link-active::before { opacity:.18 !important; }
+/* Scroll progress */
+.scroll-progress { position:fixed; top:0; left:0; height:3px; background:linear-gradient(90deg,var(--primary),var(--accent)); width:0; z-index:80; box-shadow:0 0 6px -1px var(--accent); transition:width .15s linear; }

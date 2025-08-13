@@ -52,6 +52,12 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link rel="manifest" href="/manifest.json" />
         <meta name="theme-color" content="#2563eb" />
+        {/* Script para aplicar tema inicial antes de la hidratación y evitar contenido invisible */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(() => {try {const ls = localStorage.getItem('theme');const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;const theme = (ls === 'light' || ls === 'dark') ? ls : (prefersDark ? 'dark' : 'light');document.documentElement.setAttribute('data-theme', theme);} catch(e) {}})();`
+          }}
+        />
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${inter.variable} ${montserrat.variable} antialiased`}

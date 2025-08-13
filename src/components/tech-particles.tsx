@@ -57,67 +57,55 @@ export default function TechParticles() {
       ));
     }
 
-    // Función de animación
-    const animate = () => {
-      // Limpiar canvas
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-      // Actualizar y dibujar partículas
-      for (let i = particles.length - 1; i >= 0; i--) {
-        const particle = particles[i];
-
-        // Actualizar vida
-        particle.life += 1;
-        if (particle.life > particle.maxLife) {
-          particles.splice(i, 1);
-          continue;
-        }
-
-        // Actualizar posición
-        particle.x += particle.vx;
-        particle.y += particle.vy;
-
-        // Rebotar en los bordes
-        if (particle.x < 0 || particle.x > canvas.width) particle.vx *= -0.8;
-        if (particle.y < 0 || particle.y > canvas.height) particle.vy *= -0.8;
-
-        // Mantener dentro del canvas
-        particle.x = Math.max(0, Math.min(canvas.width, particle.x));
-        particle.y = Math.max(0, Math.min(canvas.height, particle.y));
-
-        // Calcular opacidad basada en la vida
-        const lifeRatio = particle.life / particle.maxLife;
-        const currentOpacity = particle.opacity * (1 - lifeRatio * 0.5);
-
-        // Dibujar partícula
-        ctx.beginPath();
-        ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
-        
-        const particleColor = isDark ? 
-          `rgba(59, 130, 246, ${currentOpacity})` : 
-          `rgba(59, 130, 246, ${currentOpacity * 0.7})`;
-        ctx.fillStyle = particleColor;
-        ctx.fill();
-
-        // Efecto de brillo
-        ctx.beginPath();
-        ctx.arc(particle.x, particle.y, particle.size * 3, 0, Math.PI * 2);
-        const glowColor = isDark ? 
-          `rgba(59, 130, 246, ${currentOpacity * 0.2})` : 
-          `rgba(59, 130, 246, ${currentOpacity * 0.1})`;
-        ctx.fillStyle = glowColor;
-        ctx.fill();
+    // Helper to update and draw a single particle
+    const updateAndDrawParticle = (particle: Particle, index: number) => {
+      // Actualizar vida
+      particle.life += 1;
+      if (particle.life > particle.maxLife) {
+        particles.splice(index, 1);
+        return false;
       }
 
-      // Agregar nuevas partículas ocasionalmente
-      if (particles.length < 30 && Math.random() < 0.1) {
-        particles.push(createParticle(
-          Math.random() * canvas.width,
-          Math.random() * canvas.height
-        ));
-      }
+      // Actualizar posición
+      particle.x += particle.vx;
+      particle.y += particle.vy;
 
-      // Conectar partículas cercanas
+      // Rebotar en los bordes
+      if (particle.x < 0 || particle.x > canvas.width) particle.vx *= -0.8;
+      if (particle.y < 0 || particle.y > canvas.height) particle.vy *= -0.8;
+
+      // Mantener dentro del canvas
+      particle.x = Math.max(0, Math.min(canvas.width, particle.x));
+      particle.y = Math.max(0, Math.min(canvas.height, particle.y));
+
+      // Calcular opacidad basada en la vida
+      const lifeRatio = particle.life / particle.maxLife;
+      const currentOpacity = particle.opacity * (1 - lifeRatio * 0.5);
+
+      // Dibujar partícula
+      ctx.beginPath();
+      ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
+      
+      const particleColor = isDark ? 
+        `rgba(59, 130, 246, ${currentOpacity})` : 
+        `rgba(59, 130, 246, ${currentOpacity * 0.7})`;
+      ctx.fillStyle = particleColor;
+      ctx.fill();
+
+      // Efecto de brillo
+      ctx.beginPath();
+      ctx.arc(particle.x, particle.y, particle.size * 3, 0, Math.PI * 2);
+      const glowColor = isDark ? 
+        `rgba(59, 130, 246, ${currentOpacity * 0.2})` : 
+        `rgba(59, 130, 246, ${currentOpacity * 0.1})`;
+      ctx.fillStyle = glowColor;
+      ctx.fill();
+
+      return true;
+    };
+
+    // Helper to draw connections between particles
+    const drawConnections = () => {
       const connectionColor = isDark ? "rgba(59, 130, 246, 0.08)" : "rgba(59, 130, 246, 0.04)";
       ctx.strokeStyle = connectionColor;
       ctx.lineWidth = 1;
@@ -140,6 +128,28 @@ export default function TechParticles() {
           }
         }
       }
+    };
+
+    // Función de animación
+    const animate = () => {
+      // Limpiar canvas
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Actualizar y dibujar partículas
+      for (let i = particles.length - 1; i >= 0; i--) {
+        updateAndDrawParticle(particles[i], i);
+      }
+
+      // Agregar nuevas partículas ocasionalmente
+      if (particles.length < 30 && Math.random() < 0.1) {
+        particles.push(createParticle(
+          Math.random() * canvas.width,
+          Math.random() * canvas.height
+        ));
+      }
+
+      // Conectar partículas cercanas
+      drawConnections();
 
       requestAnimationFrame(animate);
     };

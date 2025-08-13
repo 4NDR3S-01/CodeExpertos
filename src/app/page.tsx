@@ -2,11 +2,9 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
-import dynamic from "next/dynamic";
 import { useTheme } from "./theme-provider";
-// Dynamic imports para reducir JS inicial
-const TechBackground = dynamic(() => import("../components/tech-background"), { ssr: false });
-const TechParticles = dynamic(() => import("../components/tech-particles"), { ssr: false });
+import TechBackground from "../components/tech-background";
+import TechParticles from "../components/tech-particles";
 import esCommon from "../../public/locales/es/common.json";
 import enCommon from "../../public/locales/en/common.json";
 
@@ -34,8 +32,6 @@ export default function Home() {
   const langDropdownRef = useRef<HTMLDivElement>(null);
   const themeDropdownRef = useRef<HTMLDivElement>(null);
   const { theme, setTheme } = useTheme();
-  const headerRef = useRef<HTMLElement | null>(null);
-  const [headerHeight, setHeaderHeight] = useState(0);
 
   // Simular useTranslation (en un proyecto real usarías next-i18next)
   const t = (key: string): string => {
@@ -97,7 +93,7 @@ export default function Home() {
       if (!el) return;
       const observer = new IntersectionObserver(
         handleIntersection(id, setActiveSection),
-        { threshold: 0.45 }
+        { threshold: id === 'inicio' ? 0.15 : 0.45 }
       );
       observer.observe(el);
       observers.push(observer);
@@ -151,63 +147,71 @@ export default function Home() {
 
   // Header shrink effect
   useEffect(() => {
-    const onScroll = () => setShrink(window.scrollY > 12);
-    window.addEventListener('scroll', onScroll);
-    return () => window.removeEventListener('scroll', onScroll);
-  }, []);
-
-  useEffect(() => {
-    const measure = () => {
-      if (headerRef.current) {
-        setHeaderHeight(headerRef.current.offsetHeight);
-      }
+    const onScroll = () => {
+      const currentY = window.scrollY;
+      setShrink(currentY > 12);
     };
-    measure();
-    window.addEventListener('resize', measure);
-    window.addEventListener('orientationchange', measure);
-    return () => { window.removeEventListener('resize', measure); window.removeEventListener('orientationchange', measure); };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+    return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
   return (
     <div className="relative min-h-screen z-10 bg-background text-foreground font-sans">
-      {/* Fondo tecnológico animado */}
       <TechBackground />
       <TechParticles />
-      
-      {/* Menú hamburguesa */}
-      <header ref={headerRef} className={`fixed top-0 left-0 w-full z-50 glass-effect border-b border-border transition-all duration-300 ${shrink ? 'backdrop-blur-md' : ''}`}>
-        <nav className={`flex items-center justify-between max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 ${shrink ? 'py-2' : 'py-2.5 sm:py-3'}`}>
-          <div className="flex items-center gap-2">
-            <Image
-              src="/icono_sin-fondo.png"
-              alt="CodeExpertos"
-              width={40}
-              height={40}
-              sizes="(max-width:640px) 36px, 40px"
-              priority
-              className={`w-auto transition-all ${shrink ? 'h-8' : 'h-9 sm:h-10'}`}
-            />
-            <span className={`font-bold tracking-tight transition-all ${shrink ? 'text-sm sm:text-base' : 'text-base sm:text-lg lg:text-xl'}`}>CodeExpertos</span>
+      {/* Header Moderno mejorado */}
+      <header
+        className={`navbar ${shrink ? 'navbar-scrolled' : ''} fixed top-0 left-0 w-full z-50 transition-all duration-300 h-[68px]`}
+      >
+        <div className="absolute inset-0 -z-10 bg-background backdrop-blur-md" />
+        <nav className="flex items-center h-full gap-4 justify-between max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"> 
+          <div className="flex items-center gap-4 min-w-0">
+            <div className="nav-brand-wrapper">
+              <span className="nav-brand-ring" aria-hidden />
+              <div className="nav-brand">
+                <Image
+                  src="/icono_sin-fondo.png"
+                  alt="CodeExpertos Logo"
+                  width={512}
+                  height={512}
+                  priority
+                  className="logo-img select-none pointer-events-none"
+                />
+              </div>
+            </div>
+            <div className={`flex flex-col leading-tight transition-all ${shrink ? 'scale-90 translate-y-[1px]' : 'scale-100'}`}>
+              <span className="font-extrabold text-lg sm:text-xl md:text-2xl tracking-tight bg-gradient-to-r from-primary via-accent to-cyan-400 bg-clip-text text-transparent">CodeExpertos</span>
+              <span className="hidden md:block text-[10px] font-semibold uppercase tracking-[0.35em] text-muted">Software Studio</span>
+            </div>
           </div>
-          <div className="flex items-center gap-2 sm:gap-4">
-            {/* Selector de idioma moderno */}
+          {/* Desktop Links */}
+          <ul className="nav-links hidden lg:flex items-center gap-1 xl:gap-2 flex-1 justify-center">
+            {sections.map((s) => (
+              <li key={s.id}>
+                <button
+                  className={`hover:text-primary transition-colors text-[0.8rem] xl:text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded relative ${activeSection===s.id ? 'nav-link-active' : 'text-foreground/80'}`}
+                  onClick={() => scrollToSection(s.id)}
+                  aria-label={"Ir a sección " + t("nav." + s.key)}
+                >
+                  <span>{t(`nav.${s.key}`)}</span>
+                </button>
+              </li>
+            ))}
+          </ul>
+          {/* Controles */}
+          <div className="flex items-center gap-2 sm:gap-3">
+            {/* Idioma */}
             <div className="relative" ref={langDropdownRef}>
               <button
                 onClick={() => setLangDropdownOpen(!langDropdownOpen)}
-                className="flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-2 rounded-lg bg-card/50 hover:bg-card/80 transition-all duration-200 border border-border hover:border-border/80 shadow-sm hover:shadow-md"
+                className={`flex items-center gap-1 sm:gap-2 px-2.5 py-2 rounded-xl border bg-card/50 hover:bg-card/80 transition-all duration-200 border-border hover:border-border/80 shadow-sm hover:shadow-md ${shrink ? 'scale-95' : ''}`}
                 aria-label="Seleccionar idioma"
               >
                 <span className="text-base sm:text-lg">{currentLanguage?.flag}</span>
-                <span className="text-xs sm:text-sm font-medium hidden md:block">{currentLanguage?.name}</span>
-                <motion.span
-                  animate={{ rotate: langDropdownOpen ? 180 : 0 }}
-                  transition={{ duration: 0.2 }}
-                  className="text-muted text-xs sm:text-sm"
-                >
-                  ▼
-                </motion.span>
+                <span className="text-[11px] sm:text-xs font-medium hidden md:block">{currentLanguage?.name}</span>
+                <motion.span animate={{ rotate: langDropdownOpen ? 180 : 0 }} transition={{ duration: 0.2 }} className="text-muted text-[10px] sm:text-xs">▼</motion.span>
               </button>
-              
               <AnimatePresence>
                 {langDropdownOpen && (
                   <motion.div
@@ -215,49 +219,34 @@ export default function Home() {
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: -10, scale: 0.95 }}
                     transition={{ duration: 0.2 }}
-                    className="absolute top-full right-0 mt-2 w-40 sm:w-48 bg-card rounded-lg shadow-lg border border-border overflow-hidden"
+                    className="absolute top-full right-0 mt-2 w-40 sm:w-48 bg-card rounded-xl border border-border overflow-hidden menu-elevated"
                   >
-                    {languages.map((lang) => (
+                    {languages.map(lang => (
                       <button
                         key={lang.code}
                         onClick={() => changeLanguage(lang.code)}
-                        className={`w-full flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 sm:py-3 text-left hover:bg-secondary transition-colors text-sm sm:text-base ${
-                          currentLang === lang.code ? 'bg-primary/10 text-primary' : 'text-card-foreground'
-                        }`}
+                        className={`w-full flex items-center gap-2 px-4 py-2.5 text-left text-sm hover:bg-secondary transition-colors ${currentLang===lang.code?'bg-primary/10 text-primary':'text-card-foreground'}`}
                       >
-                        <span className="text-base sm:text-lg">{lang.flag}</span>
+                        <span className="text-base">{lang.flag}</span>
                         <span className="font-medium">{lang.name}</span>
-                        {currentLang === lang.code && (
-                          <motion.div
-                            layoutId="activeIndicator"
-                            className="w-2 h-2 bg-primary rounded-full ml-auto"
-                          />
-                        )}
+                        {currentLang===lang.code && <motion.div layoutId="activeIndicator" className="ml-auto w-2 h-2 rounded-full bg-primary" />}
                       </button>
                     ))}
                   </motion.div>
                 )}
               </AnimatePresence>
             </div>
-
-            {/* Selector de tema */}
+            {/* Tema */}
             <div className="relative" ref={themeDropdownRef}>
               <button
                 onClick={() => setThemeDropdownOpen(!themeDropdownOpen)}
-                className="flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-2 rounded-lg bg-card/50 hover:bg-card/80 transition-all duration-200 border border-border hover:border-border/80 shadow-sm hover:shadow-md theme-toggle"
+                className={`flex items-center gap-1 sm:gap-2 px-2.5 py-2 rounded-xl border bg-card/50 hover:bg-card/80 transition-all duration-200 border-border hover:border-border/80 shadow-sm hover:shadow-md theme-toggle ${shrink ? 'scale-95' : ''}`}
                 aria-label="Cambiar tema"
               >
                 <span className="text-base sm:text-lg">{getThemeIcon()}</span>
-                <span className="text-xs sm:text-sm font-medium hidden md:block">{getThemeName()}</span>
-                <motion.span
-                  animate={{ rotate: themeDropdownOpen ? 180 : 0 }}
-                  transition={{ duration: 0.2 }}
-                  className="text-muted text-xs sm:text-sm"
-                >
-                  ▼
-                </motion.span>
+                <span className="text-[11px] sm:text-xs font-medium hidden md:block">{getThemeName()}</span>
+                <motion.span animate={{ rotate: themeDropdownOpen ? 180 : 0 }} transition={{ duration: 0.2 }} className="text-muted text-[10px] sm:text-xs">▼</motion.span>
               </button>
-              
               <AnimatePresence>
                 {themeDropdownOpen && (
                   <motion.div
@@ -265,67 +254,65 @@ export default function Home() {
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: -10, scale: 0.95 }}
                     transition={{ duration: 0.2 }}
-                    className="absolute top-full right-0 mt-2 w-40 sm:w-48 bg-card rounded-lg shadow-lg border border-border overflow-hidden"
+                    className="absolute top-full right-0 mt-2 w-40 sm:w-48 bg-card rounded-xl border border-border overflow-hidden menu-elevated"
                   >
-                    {[
-                      { value: "light", icon: "☀️", name: currentLang === "es" ? "Claro" : "Light" },
-                      { value: "dark", icon: "🌙", name: currentLang === "es" ? "Oscuro" : "Dark" },
-                      { value: "system", icon: "💻", name: currentLang === "es" ? "Sistema" : "System" },
-                    ].map((themeOption) => (
-                      <button
-                        key={themeOption.value}
-                        onClick={() => changeTheme(themeOption.value as "light" | "dark" | "system")}
-                        className={`w-full flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 sm:py-3 text-left hover:bg-secondary transition-colors text-sm sm:text-base ${
-                          theme === themeOption.value ? 'bg-primary/10 text-primary' : 'text-card-foreground'
-                        }`}
-                      >
-                        <span className="text-base sm:text-lg">{themeOption.icon}</span>
-                        <span className="font-medium">{themeOption.name}</span>
-                        {theme === themeOption.value && (
-                          <motion.div
-                            layoutId="activeThemeIndicator"
-                            className="w-2 h-2 bg-primary rounded-full ml-auto"
-                          />
-                        )}
-                      </button>
-                    ))}
+                    {(['light','dark','system'] as const).map(val => {
+                      let icon: string;
+                      switch (val) {
+                        case 'light': icon = '☀️'; break;
+                        case 'dark': icon = '🌙'; break;
+                        default: icon = '💻';
+                      }
+                      let label: string;
+                      if (val === 'light') label = currentLang==='es'?'Claro':'Light';
+                      else if (val === 'dark') label = currentLang==='es'?'Oscuro':'Dark';
+                      else label = currentLang==='es'?'Sistema':'System';
+                      const active = theme === val;
+                      return (
+                        <button
+                          key={val}
+                          onClick={() => changeTheme(val)}
+                          className={`w-full flex items-center gap-2 px-4 py-2.5 text-left text-sm hover:bg-secondary transition-colors ${active?'bg-primary/10 text-primary':'text-card-foreground'}`}
+                        >
+                          <span className="text-base">{icon}</span>
+                          <span className="font-medium">{label}</span>
+                          {active && <motion.div layoutId="activeThemeIndicator" className="ml-auto w-2 h-2 rounded-full bg-primary" />}
+                        </button>
+                      );
+                    })}
                   </motion.div>
                 )}
               </AnimatePresence>
             </div>
-
+            {/* CTA Desktop */}
+            <div className="hidden lg:block">
+              <button
+                onClick={() => scrollToSection('contacto')}
+                className="relative inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-primary to-accent text-white text-sm font-semibold shadow hover:shadow-lg transition-all group overflow-hidden"
+              >
+                <span className="relative z-10">Contacto</span>
+                <span className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity bg-white/10" />
+              </button>
+            </div>
+            {/* Mobile menu */}
             <button
-              className="sm:hidden flex flex-col gap-1 sm:gap-1.5 p-2"
+              className="lg:hidden flex flex-col justify-center gap-1 p-2 rounded-xl border border-border bg-card/40 hover:bg-card/70 transition"
               aria-label="Abrir menú"
-              onClick={() => setMenuOpen((v) => !v)}
+              onClick={() => setMenuOpen(v=>!v)}
             >
-              <span className="block w-5 sm:w-6 h-0.5 bg-foreground rounded"></span>
-              <span className="block w-5 sm:w-6 h-0.5 bg-foreground rounded"></span>
-              <span className="block w-5 sm:w-6 h-0.5 bg-foreground rounded"></span>
+              <span className="block w-6 h-0.5 bg-foreground rounded" />
+              <span className="block w-6 h-0.5 bg-foreground rounded" />
+              <span className="block w-6 h-0.5 bg-foreground rounded" />
             </button>
           </div>
-          <ul className="hidden lg:flex gap-4 xl:gap-6">
-            {sections.map((s) => (
-              <li key={s.id}>
-                <button
-                  className={`nav-link hover:text-primary transition-colors font-medium text-sm xl:text-base focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded ${activeSection===s.id ? 'nav-link-active text-primary' : ''}`}
-                  onClick={() => scrollToSection(s.id)}
-                  aria-label={"Ir a sección " + t("nav." + s.key)}
-                >
-                  {t(`nav.${s.key}`)}
-                </button>
-              </li>
-            ))}
-          </ul>
         </nav>
-        {/* Menú móvil */}
         {menuOpen && (
-          <div className="sm:hidden absolute top-full left-0 w-full bg-background border-b border-border animate-fade-in">
+          <div className="lg:hidden absolute top-full left-0 w-full bg-background/95 backdrop-blur-xl border-b border-border animate-fade-in shadow-xl">
             <ul className="flex flex-col gap-1 p-4">
-              {sections.map((s) => (
+              {sections.map(s => (
                 <li key={s.id}>
                   <button
-                    className={`w-full text-left py-3 px-3 rounded-lg font-medium text-base transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary nav-link ${activeSection===s.id ? 'bg-primary/10 text-primary' : 'hover:bg-primary/10'}`}
+                    className={`w-full text-left py-3 px-4 rounded-lg font-medium text-sm transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary nav-link ${activeSection===s.id ? 'bg-primary/10 text-primary' : 'hover:bg-primary/5 text-foreground/85'}`}
                     onClick={() => scrollToSection(s.id)}
                     aria-label={"Ir a sección " + t("nav." + s.key)}
                   >
@@ -333,54 +320,33 @@ export default function Home() {
                   </button>
                 </li>
               ))}
+              <li>
+                <button
+                  onClick={()=>scrollToSection('contacto')}
+                  className="w-full mt-2 inline-flex items-center justify-center gap-2 px-4 py-3 rounded-lg bg-gradient-to-r from-primary to-accent text-white text-sm font-semibold shadow hover:shadow-lg transition"
+                >Contacto</button>
+              </li>
             </ul>
           </div>
         )}
       </header>
-
       {/* Secciones */}
-      <main
-        style={{ paddingTop: headerHeight ? headerHeight + 16 : undefined }}
-        className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col gap-32"
-      >
+      <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col gap-24 pt-[68px]">{/* padding igual a header sin extra */}
         {/* INICIO */}
-        <motion.section
+        <section
           id="inicio"
-          style={{ minHeight: headerHeight ? `calc(100vh - ${headerHeight}px)` : '100vh' }}
-          className="section-wrapper flex flex-col justify-center items-center text-center gap-4 sm:gap-6"
-          initial={{ opacity: 0, y: 40 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.6 }}
-          transition={{ duration: 0.7 }}
+          className="section-wrapper no-halo pt-0 pb-8 sm:pb-12 flex flex-col items-center text-center gap-5 sm:gap-6"
         >
           <div className="parallax-decor"><span /><span /><span /></div>
           <div className="glass-effect rounded-2xl p-8 sm:p-12 backdrop-blur-md max-w-4xl">
-            <h1 className="animated-gradient text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold leading-tight mb-6">
-              CodeExpertos
-            </h1>
-            <p className="text-base sm:text-lg lg:text-xl max-w-sm sm:max-w-xl lg:max-w-2xl text-muted leading-relaxed mb-8">
-              {t("hero.subtitle")}
-            </p>
+            <h1 className="animated-gradient text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold leading-tight mb-6">CodeExpertos</h1>
+            <p className="text-base sm:text-lg lg:text-xl max-w-sm sm:max-w-xl lg:max-w-2xl text-muted leading-relaxed mb-8">{t("hero.subtitle")}</p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="btn btn-primary btn-glow"
-                onClick={() => document.getElementById('servicios')?.scrollIntoView({ behavior: 'smooth' })}
-              >
-                Nuestros Servicios
-              </motion.button>
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="btn btn-outline"
-                onClick={() => document.getElementById('contacto')?.scrollIntoView({ behavior: 'smooth' })}
-              >
-                Contáctanos
-              </motion.button>
+              <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="btn btn-primary btn-glow" onClick={() => document.getElementById('servicios')?.scrollIntoView({ behavior: 'smooth' })}>Nuestros Servicios</motion.button>
+              <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="btn btn-outline" onClick={() => document.getElementById('contacto')?.scrollIntoView({ behavior: 'smooth' })}>Contáctanos</motion.button>
             </div>
           </div>
-        </motion.section>
+        </section>
         <div className="section-separator" />
         {/* SERVICIOS */}
         <motion.section
